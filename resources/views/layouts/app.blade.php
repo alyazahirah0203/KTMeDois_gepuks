@@ -60,6 +60,8 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             border: 1px solid rgba(255,255,255,0.2);
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
         }
         
         .navbar-modern:hover {
@@ -197,6 +199,8 @@
             padding: 8px;
             margin-top: 12px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            z-index: 9999 !important;
+            position: absolute !important;
         }
         
         .dropdown-item-modern {
@@ -205,6 +209,7 @@
             transition: all 0.2s ease;
             color: #333;
             font-weight: 500;
+            white-space: normal !important;
         }
         
         .dropdown-item-modern i {
@@ -221,6 +226,29 @@
         
         .dropdown-item-modern:hover i {
             color: white;
+        }
+        
+        /* Notification Styles */
+        .notification-bell {
+            position: relative;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: #dc3545;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 50px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        /* Ensure dropdown appears on top */
+        .dropdown-menu {
+            z-index: 9999 !important;
         }
         
         .card-modern {
@@ -301,6 +329,9 @@
             .logo-icon-circle i {
                 font-size: 22px;
             }
+            .dropdown-menu-modern {
+                width: 300px !important;
+            }
         }
     </style>
     
@@ -352,6 +383,78 @@
                            href="{{ route('invoices.track') }}">
                             <i class="fas fa-search"></i> Track Claim
                         </a>
+                    </li>
+                    
+                    <!-- Notifications Dropdown -->
+                    <li class="nav-item dropdown notification-bell">
+                        <a class="nav-link nav-link-modern dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            @php
+                                $unreadCount = \App\Models\Notification::where('user_id', auth()->id())->where('is_read', 0)->count();
+                            @endphp
+                            @if($unreadCount > 0)
+                                <span class="notification-badge">{{ $unreadCount }}</span>
+                            @endif
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end" style="width: 350px; max-height: 400px; overflow-y: auto;">
+                            <li class="dropdown-header bg-light rounded-3 p-2 text-center">
+                                <strong><i class="fas fa-bell me-1"></i> Notifications</strong>
+                                @if($unreadCount > 0)
+                                    <button id="markAllReadBtn" class="btn btn-link btn-sm float-end text-primary p-0" style="text-decoration: none;">Mark all as read</button>
+                                @endif
+                            </li>
+                            <li><hr class="dropdown-divider m-0"></li>
+                            @php
+                                $notifications = \App\Models\Notification::where('user_id', auth()->id())
+                                    ->orderBy('created_at', 'desc')
+                                    ->limit(10)
+                                    ->get();
+                            @endphp
+                            @if($notifications->count() > 0)
+                                @foreach($notifications as $notif)
+                                    <li>
+                                        <a class="dropdown-item dropdown-item-modern {{ !$notif->is_read ? 'bg-light' : '' }}" 
+                                           href="{{ $notif->link ? $notif->link : '#' }}"
+                                           data-notif-id="{{ $notif->notification_id }}">
+                                            <div class="d-flex align-items-start">
+                                                <div class="me-2">
+                                                    @if($notif->type == 'success')
+                                                        <i class="fas fa-check-circle text-success fs-5"></i>
+                                                    @elseif($notif->type == 'warning')
+                                                        <i class="fas fa-exclamation-triangle text-warning fs-5"></i>
+                                                    @elseif($notif->type == 'danger')
+                                                        <i class="fas fa-times-circle text-danger fs-5"></i>
+                                                    @else
+                                                        <i class="fas fa-info-circle text-info fs-5"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <strong>{{ $notif->title }}</strong>
+                                                    <p class="small mb-0 text-muted">{{ Str::limit($notif->message, 80) }}</p>
+                                                    <small class="text-muted">{{ $notif->created_at->diffForHumans() }}</small>
+                                                </div>
+                                                @if(!$notif->is_read)
+                                                    <div class="ms-2">
+                                                        <span class="badge bg-primary rounded-pill">New</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </a>
+                                    </li>
+                                @endforeach
+                                @if($notifications->count() >= 10)
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="text-center py-2">
+                                        <a href="#" class="small text-primary">View all notifications</a>
+                                    </li>
+                                @endif
+                            @else
+                                <li class="text-center py-4">
+                                    <i class="fas fa-bell-slash fa-2x text-muted mb-2 d-block"></i>
+                                    <span class="text-muted">No notifications yet</span>
+                                </li>
+                            @endif
+                        </ul>
                     </li>
                     
                     <li class="nav-item dropdown">
@@ -426,11 +529,46 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 
 <script>
+    // Active nav link highlighting
     document.querySelectorAll('.nav-link-modern').forEach(link => {
         if (link.href === window.location.href) {
             link.classList.add('active');
         }
     });
+
+    // Mark single notification as read when clicked
+    document.querySelectorAll('.dropdown-item-modern[data-notif-id]').forEach(item => {
+        item.addEventListener('click', function(e) {
+            const notifId = this.getAttribute('data-notif-id');
+            fetch('/notifications/' + notifId + '/read', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json'
+                }
+            }).catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Mark all as read button
+    const markAllBtn = document.getElementById('markAllReadBtn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fetch('/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            }).catch(error => console.error('Error:', error));
+        });
+    }
 </script>
 
 @stack('scripts')
