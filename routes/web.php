@@ -7,21 +7,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\DOItemController;
 use App\Http\Controllers\NotificationController;
 
-use App\Models\Invoice;
-use App\Services\InvoiceSubmissionService;
-
-Route::get('/create-test-notification', function() {
-    \App\Models\Notification::create([
-        'user_id' => auth()->id(),
-        'title' => 'Test Notification',
-        'message' => 'This is a test notification to verify the bell icon is working.',
-        'type' => 'success',
-        'link' => '/dashboard',
-        'is_read' => false
-    ]);
-    
-    return redirect()->back()->with('success', 'Test notification created!');
-});
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
