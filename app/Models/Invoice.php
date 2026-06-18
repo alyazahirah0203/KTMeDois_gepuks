@@ -32,13 +32,17 @@ class Invoice extends Model
         'payment_terms',
         'due_date',
         'proof_of_delivery',
+        'pdf_path',
         'status',
-        'reason'
+        'reason',
+        'rejected_at',
+        'rejected_by'
     ];
 
     protected $casts = [
         'invoice_date' => 'date',
-        'due_date' => 'date'
+        'due_date' => 'date',
+        'rejected_at' => 'datetime'
     ];
 
     public static function calculateTotal($lineTotal, $discount = 0, $penalty = 0)
@@ -65,7 +69,12 @@ class Invoice extends Model
 
     public function vendor()
     {
-        return $this->belongsTo(Vendor::class, 'vendor_id');
+        return $this->belongsTo(Vendor::class, 'vendor_id', 'supplierid');
+    }
+
+    public function vendorExternal()
+    {
+        return $this->belongsTo(VendorDB::class, 'vendor_id', 'SUPPLIERID');
     }
 
     public function items()
@@ -76,5 +85,67 @@ class Invoice extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class, 'invoice_id', 'invoice_id');
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class, 'invoice_id', 'invoice_id');
+    }
+
+    public function rejector()
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function isRejected()
+    {
+        return $this->status === 'Rejected';
+    }
+
+    public function isSubmitted()
+    {
+        return $this->status === 'Submitted';
+    }
+
+    public function isFinanceReview()
+    {
+        return $this->status === 'Finance Review';
+    }
+
+    public function isPaymentProcessing()
+    {
+        return $this->status === 'Payment Processing';
+    }
+
+    public function isPaid()
+    {
+        return $this->status === 'Paid';
+    }
+
+    public function getVendorNameAttribute()
+    {
+        // First try the external vendor (for vendors from external DB)
+        if ($this->vendorExternal) {
+            return $this->vendorExternal->SUPPLIER_COMP_NAME;
+        }
+        
+        // Then try the main vendor (for legacy vendors)
+        if ($this->vendor) {
+            return $this->vendor->supplier_comp_name;
+        }
+        
+        // If still not found, try to find by vendor_id directly in external DB
+        $vendor = VendorDB::where('SUPPLIERID', $this->vendor_id)->first();
+        if ($vendor) {
+            return $vendor->SUPPLIER_COMP_NAME;
+        }
+        
+        // Last resort - check main vendors table
+        $vendorMain = Vendor::where('supplierid', $this->vendor_id)->first();
+        if ($vendorMain) {
+            return $vendorMain->supplier_comp_name;
+        }
+        
+        return 'Unknown Vendor (' . $this->vendor_id . ')';
     }
 }

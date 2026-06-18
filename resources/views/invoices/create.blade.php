@@ -3,6 +3,11 @@
 @section('title', 'Submit Invoice')
 
 @section('content')
+@php
+    $isVendorGuard = auth()->guard('vendor')->check();
+    $dashboardRoute = $isVendorGuard ? route('vendor.dashboard') : route('dashboard');
+@endphp
+
 <div class="row justify-content-center">
     <div class="col-md-10">
         <div class="card-modern bg-white">
@@ -18,7 +23,7 @@
                         <select name="do_id" id="do_id" class="form-select" required>
                             <option value="">-- Select Delivery Order --</option>
                             @foreach($deliveryOrders as $do)
-                                <option value="{{ $do->do_id }}" data-do-number="{{ $do->do_number }}">
+                                <option value="{{ $do->do_id }}" data-do-number="{{ $do->do_number }}" data-delivery-date="{{ $do->delivery_date }}">
                                     {{ $do->do_number }} - PO: {{ $do->po_number }}
                                 </option>
                             @endforeach
@@ -107,11 +112,12 @@
                         </div>
                     </div>
 
+                    <!-- FIXED: Cancel button uses dashboard route -->
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-gradient-success btn-lg">
                             <i class="fas fa-paper-plane me-2"></i> Submit Invoice
                         </button>
-                        <a href="{{ route('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ $dashboardRoute }}" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>
             </div>

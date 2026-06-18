@@ -23,7 +23,6 @@
             overflow-x: hidden;
         }
         
-        /* Train background image */
         body::before {
             content: '';
             position: absolute;
@@ -35,7 +34,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.15;
+            opacity: 0.1;
             pointer-events: none;
         }
         
@@ -74,7 +73,6 @@
             overflow: hidden;
         }
         
-        /* Train image overlay on left panel */
         .login-left::before {
             content: '';
             position: absolute;
@@ -89,7 +87,6 @@
             pointer-events: none;
         }
         
-        /* Decorative train icon */
         .login-left::after {
             content: '🚆';
             position: absolute;
@@ -361,12 +358,80 @@
             padding: 0 15px;
         }
         
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .role-option {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 15px;
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+        
+        .role-option:hover {
+            border-color: #667eea;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.15);
+        }
+        
+        .role-option input[type="radio"] {
+            display: none;
+        }
+        
+        .role-option.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+        
+        .role-option.active i {
+            color: white;
+        }
+        
+        .role-option i {
+            font-size: 24px;
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .role-option .role-label {
+            font-size: 12px;
+            font-weight: 600;
+            display: block;
+        }
+        
+        .role-option .role-desc {
+            font-size: 10px;
+            opacity: 0.7;
+            display: block;
+            margin-top: 2px;
+        }
+        
         @media (max-width: 768px) {
             .login-left {
                 display: none;
             }
             .login-card {
                 max-width: 450px;
+            }
+            .role-option {
+                min-width: 80px;
+                padding: 10px;
+            }
+            .role-option i {
+                font-size: 20px;
             }
         }
     </style>
@@ -378,7 +443,6 @@
                 <div class="col-lg-10">
                     <div class="login-card">
                         <div class="row g-0">
-                            <!-- Left Panel - Branding with Logo -->
                             <div class="col-lg-6">
                                 <div class="login-left">
                                     <div class="logo-area">
@@ -398,39 +462,9 @@
                                         <p>Access your account to manage invoices and track claims</p>
                                     </div>
                                     
-                                    <div class="feature-list">
-                                        <div class="feature-item">
-                                            <div class="feature-icon">
-                                                <i class="fas fa-file-invoice"></i>
-                                            </div>
-                                            <div class="feature-text">
-                                                <h6>Submit Invoices</h6>
-                                                <p>Upload and manage delivery orders</p>
-                                            </div>
-                                        </div>
-                                        <div class="feature-item">
-                                            <div class="feature-icon">
-                                                <i class="fas fa-chart-line"></i>
-                                            </div>
-                                            <div class="feature-text">
-                                                <h6>Track Claims</h6>
-                                                <p>Real-time status tracking</p>
-                                            </div>
-                                        </div>
-                                        <div class="feature-item">
-                                            <div class="feature-icon">
-                                                <i class="fas fa-shield-alt"></i>
-                                            </div>
-                                            <div class="feature-text">
-                                                <h6>Secure Platform</h6>
-                                                <p>Your data is safe with us</p>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                             
-                            <!-- Right Panel - Login Form -->
                             <div class="col-lg-6">
                                 <div class="login-right">
                                     <div class="login-header">
@@ -442,9 +476,37 @@
                                         @csrf
                                         
                                         <div class="form-group">
+                                            <label><i class="fas fa-user-tag"></i> Login As</label>
+                                            <div class="role-selector">
+                                                <label class="role-option {{ old('role') === 'vendor' ? 'active' : '' }}">
+                                                    <input type="radio" name="role" value="vendor" {{ old('role') === 'vendor' ? 'checked' : '' }} required>
+                                                    <i class="fas fa-building"></i>
+                                                    <span class="role-label">Vendor</span>
+                                                    <span class="role-desc">Supplier Access</span>
+                                                </label>
+                                                <label class="role-option {{ old('role') === 'officer' ? 'active' : '' }}">
+                                                    <input type="radio" name="role" value="officer" {{ old('role') === 'officer' ? 'checked' : '' }} required>
+                                                    <i class="fas fa-user-tie"></i>
+                                                    <span class="role-label">Officer</span>
+                                                    <span class="role-desc">Review/Finance</span>
+                                                </label>
+                                                <label class="role-option {{ old('role') === 'admin' ? 'active' : '' }}">
+                                                    <input type="radio" name="role" value="admin" {{ old('role') === 'admin' ? 'checked' : '' }} required>
+                                                    <i class="fas fa-user-cog"></i>
+                                                    <span class="role-label">Admin</span>
+                                                    <span class="role-desc">IT Officer</span>
+                                                </label>
+                                            </div>
+                                            @error('role')
+                                                <small class="text-danger mt-1 d-block">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+                                        
+                                        <div class="form-group">
                                             <label><i class="fas fa-envelope"></i> Email Address</label>
                                             <div class="input-group-custom">
-                                                <input type="email" name="email" value="{{ old('email') }}" 
+                                                <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                                       id="email" name="email" value="{{ old('email') }}" 
                                                        placeholder="your@email.com" required autofocus>
                                                 <i class="fas fa-envelope input-icon"></i>
                                             </div>
@@ -456,7 +518,8 @@
                                         <div class="form-group">
                                             <label><i class="fas fa-lock"></i> Password</label>
                                             <div class="input-group-custom">
-                                                <input type="password" name="password" placeholder="••••••••" required>
+                                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                                       id="password" name="password" placeholder="••••••••" required>
                                                 <i class="fas fa-lock input-icon"></i>
                                             </div>
                                             @error('password')
@@ -465,10 +528,6 @@
                                         </div>
                                         
                                         <div class="remember-forgot">
-                                            <label class="checkbox-custom">
-                                                <input type="checkbox" name="remember">
-                                                <span>Remember me</span>
-                                            </label>
                                             @if (Route::has('password.request'))
                                                 <a href="{{ route('password.request') }}" class="forgot-link">
                                                     Forgot Password?
@@ -484,8 +543,11 @@
                                             <span>OR</span>
                                         </div>
                                         
+                                        <!-- REMOVED: Create Account link -->
                                         <div class="register-link">
-                                            Don't have an account? <a href="{{ route('register') }}">Create an account</a>
+                                            <a href="{{ route('password.request') }}" class="text-primary">
+                                                <i class="fas fa-key me-1"></i> Forgot Password?
+                                            </a>
                                         </div>
                                     </form>
                                 </div>
@@ -496,5 +558,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleOptions = document.querySelectorAll('.role-option');
+            
+            roleOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    roleOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

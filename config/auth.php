@@ -40,6 +40,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        // ADD THIS VENDOR GUARD
+        'vendor' => [
+            'driver' => 'session',
+            'provider' => 'vendor_users',
+        ],
     ],
 
     /*
@@ -63,6 +68,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+        // ADD THIS VENDOR PROVIDER
+        'vendor_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\VendorUser::class,
         ],
 
         // 'users' => [
@@ -90,6 +100,13 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_resets',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        // OPTIONAL: Add password reset for vendors if needed
+        'vendor_users' => [
+            'provider' => 'vendor_users',
+            'table' => 'vendor_password_resets',
             'expire' => 60,
             'throttle' => 60,
         ],

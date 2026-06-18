@@ -18,15 +18,24 @@ class Payment extends Model
         'payment_amount',
         'payment_status',
         'payment_method',
-        'transaction_ref'
+        'transaction_ref',
+        'proof_of_payment',
+        'remarks',
+        'processed_by'
     ];
 
     protected $casts = [
-        'payment_date' => 'date'
+        'payment_date' => 'date',
+        'payment_amount' => 'decimal:2'
     ];
 
     public function invoice()
     {
         return $this->belongsTo(Invoice::class, 'invoice_id', 'invoice_id');
+    }
+
+    public function processor()
+    {
+        return $this->belongsTo(User::class, 'processed_by');
     }
 }

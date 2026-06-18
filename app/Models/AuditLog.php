@@ -22,11 +22,45 @@ class AuditLog extends Model
         'ip_address'
     ];
 
+    protected $casts = [
+        'timestamp' => 'datetime', 
+    ];
+
     public static function log($module, $action, $description, $status = 'Success')
     {
+        $username = 'system';
+        
+        // Check if vendor is authenticated (from external database)
+        if (auth()->guard('vendor')->check()) {
+            $vendorUser = auth()->guard('vendor')->user();
+            
+            // Try to get company name from vendor
+            if ($vendorUser->vendor) {
+                $username = $vendorUser->vendor->SUPPLIER_COMP_NAME . ' (Vendor)';
+            } else {
+                $username = $vendorUser->name . ' (Vendor)';
+            }
+        } 
+        // Check if web user is authenticated (officer/admin from main database)
+        elseif (auth()->check()) {
+            $user = auth()->user();
+            $username = $user->name ?? 'system';
+            
+            // Add role to username for clarity
+            if ($user->isITOfficer()) {
+                $username .= ' (IT Admin)';
+            } elseif ($user->isReviewOfficer()) {
+                $username .= ' (Review Officer)';
+            } elseif ($user->isFinanceOfficer()) {
+                $username .= ' (Finance Officer)';
+            } elseif ($user->isVendor()) {
+                $username .= ' (Vendor)';
+            }
+        }
+
         return self::create([
             'timestamp' => now(),
-            'username' => auth()->user()->name ?? 'system',
+            'username' => $username,
             'module' => $module,
             'action' => $action,
             'description' => $description,

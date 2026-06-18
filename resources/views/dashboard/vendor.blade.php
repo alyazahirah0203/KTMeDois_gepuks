@@ -3,12 +3,21 @@
 @section('title', 'Vendor Dashboard')
 
 @section('content')
+@php
+    $vendorName = 'Vendor';
+    if (auth()->guard('vendor')->check()) {
+        $vendorName = auth()->guard('vendor')->user()->name;
+    } elseif (auth()->check() && auth()->user()->isVendor()) {
+        $vendorName = auth()->user()->name;
+    }
+@endphp
+
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="card-modern bg-white p-4 rounded-4">
             <h2 class="mb-0">
                 <i class="fas fa-tachometer-alt text-primary me-2"></i> 
-                Welcome back, {{ auth()->user()->name }}!
+                Welcome back, {{ $vendorName }}!
             </h2>
             <p class="text-muted mt-2">Manage your invoices and track claims from here.</p>
         </div>
@@ -172,6 +181,33 @@
                                                 title="Copy Invoice Number">
                                             <i class="fas fa-copy"></i>
                                         </button>
+                                        
+                                        @if(in_array($inv->status, ['Submitted', 'Rejected']))
+                                        <a href="{{ route('invoices.edit', $inv->invoice_id) }}" 
+                                           class="btn btn-sm btn-outline-warning" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Edit Invoice">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @endif
+                                        
+                                        @if(in_array($inv->status, ['Submitted', 'Rejected']))
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDelete('{{ $inv->invoice_id }}', '{{ $inv->invoice_no }}')"
+                                                data-bs-toggle="tooltip" 
+                                                title="Delete Invoice">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        
+                                        <form id="delete-form-{{ $inv->invoice_id }}" 
+                                              method="POST" 
+                                              action="{{ route('invoices.destroy', $inv->invoice_id) }}" 
+                                              style="display: none;">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -188,13 +224,6 @@
                             </tr>
                             @endforelse
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="3" class="text-end">Total:</th>
-                                <th class="fw-bold text-primary" id="totalAmount">RM 0.00</th>
-                                <th colspan="3"></th>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -202,8 +231,28 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this invoice?</p>
+                <p><strong>Invoice Number:</strong> <span id="deleteInvoiceNumber"></span></p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Invoice</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-/* Modern Table Styles */
 .dataTables_wrapper .dataTables_length select {
     padding: 4px 8px;
     border-radius: 8px;
@@ -255,7 +304,6 @@ table.dataTable tbody td {
     color: #6c757d;
 }
 
-/* Tooltip */
 .btn-group .btn {
     margin: 0 2px;
     border-radius: 8px !important;
@@ -266,7 +314,6 @@ table.dataTable tbody td {
     transition: all 0.2s ease;
 }
 
-/* Export buttons */
 .dt-buttons {
     margin-bottom: 15px;
 }
@@ -284,89 +331,61 @@ table.dataTable tbody td {
     transform: translateY(-2px);
 }
 </style>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Invoice number copied: ' + text);
+    }, function() {
+        var input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        alert('Invoice number copied: ' + text);
+    });
+}
+
+var deleteInvoiceId = null;
+
+function confirmDelete(invoiceId, invoiceNo) {
+    deleteInvoiceId = invoiceId;
+    document.getElementById('deleteInvoiceNumber').textContent = invoiceNo;
+    var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (deleteInvoiceId) {
+        document.getElementById('delete-form-' + deleteInvoiceId).submit();
+    }
+});
+</script>
 @endsection
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Initialize DataTable
-    var table = $('#invoicesTable').DataTable({
-        responsive: true,
-        order: [[2, 'desc']], // Sort by date descending
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-        language: {
-            search: "<i class='fas fa-search'></i> Search:",
-            lengthMenu: "Show _MENU_ entries",
-            info: "Showing _START_ to _END_ of _TOTAL_ invoices",
-            infoEmpty: "No invoices found",
-            infoFiltered: "(filtered from _MAX_ total invoices)",
-            zeroRecords: "No matching invoices found",
-            paginate: {
-                first: "<i class='fas fa-angle-double-left'></i>",
-                last: "<i class='fas fa-angle-double-right'></i>",
-                previous: "<i class='fas fa-angle-left'></i>",
-                next: "<i class='fas fa-angle-right'></i>"
-            }
-        },
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'copy',
-                text: '<i class="fas fa-copy"></i> Copy',
-                className: 'btn-sm'
-            },
-            {
-                extend: 'excel',
-                text: '<i class="fas fa-file-excel"></i> Excel',
-                className: 'btn-sm'
-            },
-            {
-                extend: 'pdf',
-                text: '<i class="fas fa-file-pdf"></i> PDF',
-                className: 'btn-sm'
-            },
-            {
-                extend: 'print',
-                text: '<i class="fas fa-print"></i> Print',
-                className: 'btn-sm'
-            }
-        ],
-        columnDefs: [
-            { orderable: false, targets: [6] } // Disable sorting on action column
-        ]
-    });
+    var table = $('#invoicesTable');
+    var hasData = table.find('tbody tr:not(:has(td[colspan]))').length > 0;
     
-    // Calculate total amount
-    var total = 0;
-    $('#invoicesTable tbody tr').each(function() {
-        var amount = $(this).find('td:eq(3)').text().replace('RM', '').replace(/,/g, '').trim();
-        if (amount) {
-            total += parseFloat(amount);
-        }
-    });
-    $('#totalAmount').text('RM ' + total.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-    
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    if (hasData) {
+        table.DataTable({
+            responsive: true,
+            order: [[2, 'desc']],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            language: {
+                search: "<i class='fas fa-search'></i> Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ invoices",
+                infoEmpty: "No invoices found",
+                infoFiltered: "(filtered from _MAX_ total invoices)",
+                zeroRecords: "No matching invoices found"
+            }
+        });
+    }
 });
-
-// Copy to clipboard function
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        // Show temporary notification
-        var notification = document.createElement('div');
-        notification.className = 'alert alert-success alert-modern position-fixed top-0 start-50 translate-middle-x mt-3';
-        notification.style.zIndex = '9999';
-        notification.innerHTML = '<i class="fas fa-check-circle me-2"></i> Invoice number copied to clipboard!';
-        document.body.appendChild(notification);
-        setTimeout(function() {
-            notification.remove();
-        }, 2000);
-    });
-}
 </script>
 @endpush

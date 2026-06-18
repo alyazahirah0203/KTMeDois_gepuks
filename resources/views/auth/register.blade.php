@@ -23,7 +23,6 @@
             position: relative;
         }
         
-        /* Train background */
         body::before {
             content: '';
             position: absolute;
@@ -152,6 +151,8 @@
             font-size: 14px;
             transition: all 0.3s ease;
             background: #f8f9ff;
+            appearance: none;
+            -webkit-appearance: none;
         }
         
         .input-group-custom input:focus,
@@ -168,6 +169,7 @@
             top: 50%;
             transform: translateY(-50%);
             color: #adb5bd;
+            pointer-events: none;
         }
         
         .btn-register {
@@ -231,6 +233,43 @@
         .divider span {
             padding: 0 15px;
         }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .role-badge-vendor {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .role-badge-review {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .role-badge-finance {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .error-text {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .role-description {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 4px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -249,82 +288,119 @@
             </div>
             
             <div class="register-body">
-                <form method="POST" action="{{ route('register') }}">
+                <form method="POST" action="{{ route('register') }}" id="registerForm">
                     @csrf
                     
                     <div class="form-group">
                         <label><i class="fas fa-user"></i> Full Name</label>
                         <div class="input-group-custom">
-                            <input type="text" name="name" value="{{ old('name') }}" 
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                   id="name" name="name" value="{{ old('name') }}" 
                                    placeholder="Enter your full name" required autofocus>
                             <i class="fas fa-user input-icon"></i>
                         </div>
                         @error('name')
-                            <small class="text-danger">{{ $message }}</small>
+                            <span class="error-text">{{ $message }}</span>
                         @enderror
                     </div>
                     
                     <div class="form-group">
                         <label><i class="fas fa-envelope"></i> Email Address</label>
                         <div class="input-group-custom">
-                            <input type="email" name="email" value="{{ old('email') }}" 
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                   id="email" name="email" value="{{ old('email') }}" 
                                    placeholder="your@email.com" required>
                             <i class="fas fa-envelope input-icon"></i>
                         </div>
                         @error('email')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-id-card"></i> Vendor ID (Supplier ID)</label>
-                        <div class="input-group-custom">
-                            <input type="text" name="supplierid" value="{{ old('supplierid') }}" 
-                                   placeholder="Enter your registered Vendor ID" required>
-                            <i class="fas fa-id-card input-icon"></i>
-                        </div>
-                        <small class="helper-text">Your Vendor ID from KTMB registration</small>
-                        @error('supplierid')
-                            <small class="text-danger">{{ $message }}</small>
+                            <span class="error-text">{{ $message }}</span>
                         @enderror
                     </div>
                     
                     <div class="form-group">
                         <label><i class="fas fa-tag"></i> Register As</label>
                         <div class="input-group-custom">
-                            <select name="role" required>
-                                <option value="vendor">Vendor</option>
-                                <option value="officer">KTMB Officer</option>
+                            <select class="form-select @error('role') is-invalid @enderror" 
+                                    id="role" name="role" required>
+                                <option value="vendor" {{ old('role') == 'vendor' ? 'selected' : '' }}>Vendor</option>
+                                <option value="review_officer" {{ old('role') == 'review_officer' ? 'selected' : '' }}>Review Officer</option>
+                                <option value="finance_officer" {{ old('role') == 'finance_officer' ? 'selected' : '' }}>Finance Officer</option>
                             </select>
                             <i class="fas fa-chevron-down input-icon"></i>
                         </div>
+                        <small class="role-description">
+                            @if(old('role') == 'review_officer')
+                                Review Officer: Review and approve invoices
+                            @elseif(old('role') == 'finance_officer')
+                                Finance Officer: Process payments and mark as paid
+                            @else
+                                Vendor: Submit invoices and track claims
+                            @endif
+                        </small>
                         @error('role')
-                            <small class="text-danger">{{ $message }}</small>
+                            <span class="error-text">{{ $message }}</span>
                         @enderror
+                    </div>
+                    
+                    <!-- Vendor Fields -->
+                    <div id="vendorFields">
+                        <div class="form-group">
+                            <label><i class="fas fa-id-card"></i> Vendor ID (Supplier ID)</label>
+                            <div class="input-group-custom">
+                                <input type="text" class="form-control @error('supplierid') is-invalid @enderror" 
+                                       id="supplierid" name="supplierid" value="{{ old('supplierid') }}" 
+                                       placeholder="Enter your Vendor ID (e.g., SAZ001)">
+                                <i class="fas fa-id-card input-icon"></i>
+                            </div>
+                            <small class="helper-text">Required only if registering as Vendor. Must match KTMB records.</small>
+                            @error('supplierid')
+                                <span class="error-text">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
                     
                     <div class="form-group">
                         <label><i class="fas fa-lock"></i> Password</label>
                         <div class="input-group-custom">
-                            <input type="password" name="password" placeholder="Create a strong password" required>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                   id="password" name="password" placeholder="Create a strong password" required>
                             <i class="fas fa-lock input-icon"></i>
                         </div>
-                        <small class="helper-text">Minimum 8 characters</small>
+                        <small class="helper-text">Minimum 8 characters with letters and numbers</small>
                         @error('password')
-                            <small class="text-danger">{{ $message }}</small>
+                            <span class="error-text">{{ $message }}</span>
                         @enderror
                     </div>
                     
                     <div class="form-group">
                         <label><i class="fas fa-check-circle"></i> Confirm Password</label>
                         <div class="input-group-custom">
-                            <input type="password" name="password_confirmation" placeholder="Confirm your password" required>
+                            <input type="password" class="form-control" 
+                                   id="password_confirmation" name="password_confirmation" 
+                                   placeholder="Confirm your password" required>
                             <i class="fas fa-check-circle input-icon"></i>
                         </div>
                     </div>
                     
                     <div class="divider">
                         <span>Secure Registration</span>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span id="roleDisplayVendor" class="role-badge role-badge-vendor" style="display: none;">
+                                <i class="fas fa-building"></i> Vendor
+                            </span>
+                            <span id="roleDisplayReview" class="role-badge role-badge-review" style="display: none;">
+                                <i class="fas fa-clipboard-check"></i> Review Officer
+                            </span>
+                            <span id="roleDisplayFinance" class="role-badge role-badge-finance" style="display: none;">
+                                <i class="fas fa-coins"></i> Finance Officer
+                            </span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <small class="text-muted">All fields are required</small>
+                        </div>
                     </div>
                     
                     <button type="submit" class="btn-register">
@@ -338,5 +414,52 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('role');
+            const vendorFields = document.getElementById('vendorFields');
+            const supplierIdInput = document.getElementById('supplierid');
+            const roleDisplayVendor = document.getElementById('roleDisplayVendor');
+            const roleDisplayReview = document.getElementById('roleDisplayReview');
+            const roleDisplayFinance = document.getElementById('roleDisplayFinance');
+            const roleDescription = document.querySelector('.role-description');
+            
+            const descriptions = {
+                'vendor': 'Vendor: Submit invoices and track claims',
+                'review_officer': 'Review Officer: Review and approve invoices',
+                'finance_officer': 'Finance Officer: Process payments and mark as paid'
+            };
+            
+            function toggleFields() {
+                const selectedRole = roleSelect.value;
+                
+                vendorFields.style.display = 'none';
+                roleDisplayVendor.style.display = 'none';
+                roleDisplayReview.style.display = 'none';
+                roleDisplayFinance.style.display = 'none';
+                
+                if (selectedRole === 'vendor') {
+                    vendorFields.style.display = 'block';
+                    supplierIdInput.setAttribute('required', 'required');
+                    roleDisplayVendor.style.display = 'inline-block';
+                } else {
+                    supplierIdInput.removeAttribute('required');
+                    supplierIdInput.value = '';
+                    
+                    if (selectedRole === 'review_officer') {
+                        roleDisplayReview.style.display = 'inline-block';
+                    } else if (selectedRole === 'finance_officer') {
+                        roleDisplayFinance.style.display = 'inline-block';
+                    }
+                }
+                
+                roleDescription.textContent = descriptions[selectedRole] || '';
+            }
+            
+            roleSelect.addEventListener('change', toggleFields);
+            toggleFields();
+        });
+    </script>
 </body>
 </html>

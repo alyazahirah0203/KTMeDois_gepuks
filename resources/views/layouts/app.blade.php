@@ -31,7 +31,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
         }
         
         .main-content {
@@ -52,21 +52,21 @@
         }
         
         .navbar-modern {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(12px);
             border-radius: 60px;
             margin: 15px 20px;
             padding: 8px 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.5);
             transition: all 0.3s ease;
             position: relative;
             z-index: 1000;
         }
         
         .navbar-modern:hover {
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            background: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
         
         .navbar-brand-custom {
@@ -88,12 +88,12 @@
         .logo-icon-circle {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         
         .logo-icon-circle i {
@@ -104,7 +104,7 @@
         .logo-text {
             font-weight: 700;
             font-size: 1.2rem;
-            color: white;
+            color: #0f172a;
             letter-spacing: 1px;
         }
         
@@ -112,11 +112,11 @@
             font-size: 0.7rem;
             font-weight: 400;
             display: block;
-            color: rgba(255,255,255,0.8);
+            color: #334155;
         }
         
         .nav-link-modern {
-            color: rgba(255,255,255,0.9) !important;
+            color: #1e293b !important;
             font-weight: 500;
             padding: 10px 22px !important;
             margin: 0 5px;
@@ -130,40 +130,79 @@
         }
         
         .nav-link-modern:hover {
-            background: rgba(255,255,255,0.2);
-            color: white !important;
+            background: rgba(255,255,255,0.6);
+            color: #0f172a !important;
             transform: translateY(-2px);
         }
         
         .nav-link-modern.active {
-            background: rgba(255,255,255,0.25);
-            color: white !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.7);
+            color: #0891b2 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .nav-link-notification {
+            padding: 10px 12px !important;
+            position: relative;
+        }
+        
+        .notification-bell {
+            position: relative;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            left: -5px;
+            background-color: #ef4444;
+            color: white;
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 50px;
+            min-width: 16px;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .notification-dropdown {
+            width: 350px !important;
+            min-width: 300px !important;
+            max-width: 350px !important;
+        }
+        
+        .notification-dropdown .dropdown-item-modern {
+            padding: 8px 12px !important;
+            font-size: 13px;
+        }
+        
+        .notification-dropdown .dropdown-header {
+            font-size: 12px;
+            padding: 8px 12px !important;
         }
         
         .user-avatar-btn {
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.25);
             padding: 8px 18px;
             border-radius: 50px;
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
-            color: white;
+            color: #1e293b;
             text-decoration: none;
         }
         
         .user-avatar-btn:hover {
-            background: rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.45);
             transform: translateY(-2px);
         }
         
         .user-avatar-small {
             width: 38px;
             height: 38px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -184,11 +223,13 @@
             font-weight: 600;
             margin-bottom: 0;
             line-height: 1.2;
+            color: #0f172a;
         }
         
         .user-role {
             font-size: 11px;
-            opacity: 0.8;
+            opacity: 0.7;
+            color: #334155;
         }
         
         .dropdown-menu-modern {
@@ -198,7 +239,7 @@
             border-radius: 20px;
             padding: 8px;
             margin-top: 12px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             z-index: 9999 !important;
             position: absolute !important;
         }
@@ -215,11 +256,11 @@
         .dropdown-item-modern i {
             margin-right: 10px;
             width: 20px;
-            color: #667eea;
+            color: #0891b2;
         }
         
         .dropdown-item-modern:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
             color: white;
             transform: translateX(3px);
         }
@@ -228,25 +269,6 @@
             color: white;
         }
         
-        /* Notification Styles */
-        .notification-bell {
-            position: relative;
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -10px;
-            background-color: #dc3545;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 50px;
-            min-width: 18px;
-            text-align: center;
-        }
-        
-        /* Ensure dropdown appears on top */
         .dropdown-menu {
             z-index: 9999 !important;
         }
@@ -266,7 +288,7 @@
         }
         
         .card-header-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
             color: white;
             padding: 16px 24px;
             border: none;
@@ -274,7 +296,7 @@
         }
         
         .btn-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
             border: none;
             color: white;
             padding: 10px 24px;
@@ -285,12 +307,12 @@
         
         .btn-gradient:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+            box-shadow: 0 5px 15px rgba(8,145,178,0.4);
             color: white;
         }
         
         .btn-gradient-success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
         }
         
         .alert-modern {
@@ -309,6 +331,9 @@
             }
             .nav-link-modern {
                 padding: 8px 15px !important;
+            }
+            .nav-link-notification {
+                padding: 8px 10px !important;
             }
             .user-avatar-btn {
                 padding: 5px 12px;
@@ -331,6 +356,16 @@
             }
             .dropdown-menu-modern {
                 width: 300px !important;
+            }
+            .notification-badge {
+                left: -3px;
+                top: -1px;
+                font-size: 8px;
+                padding: 1px 3px;
+                min-width: 14px;
+            }
+            .notification-dropdown {
+                width: 280px !important;
             }
         }
     </style>
@@ -355,21 +390,60 @@
             </div>
         </a>
         
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarModern" style="background: rgba(255,255,255,0.2); border: none;">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarModern" style="background: rgba(255,255,255,0.3); border: none;">
             <span class="navbar-toggler-icon"></span>
         </button>
         
         <div class="collapse navbar-collapse" id="navbarModern">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                @auth
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                @php
+                    // Determine which guard is authenticated
+                    $isVendorGuard = auth()->guard('vendor')->check();
+                    $isWebGuard = auth()->check();
+                    $isAuthenticated = $isVendorGuard || $isWebGuard;
+                    
+                    // Get user info
+                    $userName = 'Guest';
+                    $userRole = '';
+                    $userId = null;
+                    $isVendor = false;
+                    $isOfficer = false;
+                    $isITOfficer = false;
+                    
+                    if ($isVendorGuard) {
+                        $vendorUser = auth()->guard('vendor')->user();
+                        $userName = $vendorUser->name;
+                        $userRole = 'Vendor';
+                        $userId = $vendorUser->id;
+                        $isVendor = true;
+                    } elseif ($isWebGuard) {
+                        $user = auth()->user();
+                        $userName = $user->name;
+                        $userRole = $user->role;
+                        $userId = $user->id;
+                        $isVendor = $user->isVendor();
+                        $isOfficer = $user->isOfficer();
+                        $isITOfficer = $user->isITOfficer();
+                    }
+                @endphp
+
+                @if($isAuthenticated)
+                    <!-- Dashboard -->
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern {{ request()->routeIs('dashboard') ? 'active' : '' }}" 
-                           href="{{ route('dashboard') }}">
+                        <a class="nav-link nav-link-modern {{ request()->routeIs('dashboard') ? 'active' : '' }} {{ request()->routeIs('vendor.dashboard') ? 'active' : '' }}" 
+                           href="{{ $isVendorGuard ? route('vendor.dashboard') : route('dashboard') }}">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     
-                    @if(auth()->user()->isVendor())
+                    <!-- Vendor Links - Show for both vendor guard and vendor role in web guard -->
+                    @if($isVendorGuard || $isVendor)
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ request()->routeIs('do.*') ? 'active' : '' }}" 
+                           href="{{ route('do.index') }}">
+                            <i class="fas fa-truck"></i> DO
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-modern {{ request()->routeIs('invoices.create') ? 'active' : '' }}" 
                            href="{{ route('invoices.create') }}">
@@ -378,6 +452,7 @@
                     </li>
                     @endif
                     
+                    <!-- Track Claim -->
                     <li class="nav-item">
                         <a class="nav-link nav-link-modern {{ request()->routeIs('invoices.track') ? 'active' : '' }}" 
                            href="{{ route('invoices.track') }}">
@@ -385,37 +460,80 @@
                         </a>
                     </li>
                     
-                    <!-- Notifications Dropdown -->
+                    <!-- Review (Officers) -->
+                    @if($isOfficer)
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ request()->routeIs('review.*') ? 'active' : '' }}" 
+                           href="{{ route('review.index') }}">
+                            <i class="fas fa-clipboard-check"></i> Review
+                        </a>
+                    </li>
+                    @endif
+
+                    <!-- Admin Panel (IT Officer Only) -->
+                    @if($isITOfficer)
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern {{ request()->routeIs('admin.*') ? 'active' : '' }}" 
+                           href="{{ route('admin.dashboard') }}">
+                            <i class="fas fa-shield-alt"></i> Admin Panel
+                        </a>
+                    </li>
+                    @endif
+                    
+                    <!-- NOTIFICATIONS DROPDOWN -->
                     <li class="nav-item dropdown notification-bell">
-                        <a class="nav-link nav-link-modern dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link nav-link-modern nav-link-notification dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="position: relative;">
                             <i class="fas fa-bell"></i>
                             @php
-                                $unreadCount = \App\Models\Notification::where('user_id', auth()->id())->where('is_read', 0)->count();
+                                $unreadCount = 0;
+                                if ($isVendorGuard && $userId) {
+                                    // For vendors - use vendor_notifications table
+                                    $unreadCount = DB::connection('vendor_db')->table('vendor_notifications')
+                                        ->where('vendor_user_id', $userId)
+                                        ->where('is_read', 0)
+                                        ->count();
+                                } elseif ($isWebGuard && $userId) {
+                                    // For officers/admins - use notifications table
+                                    $unreadCount = \App\Models\Notification::where('user_id', $userId)->where('is_read', 0)->count();
+                                }
                             @endphp
                             @if($unreadCount > 0)
                                 <span class="notification-badge">{{ $unreadCount }}</span>
                             @endif
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end" style="width: 350px; max-height: 400px; overflow-y: auto;">
-                            <li class="dropdown-header bg-light rounded-3 p-2 text-center">
+                        <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end notification-dropdown" style="width: 350px; max-height: 450px; overflow-y: auto;">
+                            <li class="dropdown-header bg-light rounded-3 px-3 py-2 text-center">
                                 <strong><i class="fas fa-bell me-1"></i> Notifications</strong>
                                 @if($unreadCount > 0)
-                                    <button id="markAllReadBtn" class="btn btn-link btn-sm float-end text-primary p-0" style="text-decoration: none;">Mark all as read</button>
+                                    <button id="markAllReadBtn" class="btn btn-link btn-sm float-end text-primary p-0" style="text-decoration: none;">Mark all read</button>
                                 @endif
                             </li>
                             <li><hr class="dropdown-divider m-0"></li>
                             @php
-                                $notifications = \App\Models\Notification::where('user_id', auth()->id())
-                                    ->orderBy('created_at', 'desc')
-                                    ->limit(10)
-                                    ->get();
+                                $notifications = collect();
+                                if ($isVendorGuard && $userId) {
+                                    // For vendors - get from vendor_notifications table
+                                    $notifications = DB::connection('vendor_db')->table('vendor_notifications')
+                                        ->where('vendor_user_id', $userId)
+                                        ->orderBy('created_at', 'desc')
+                                        ->limit(10)
+                                        ->get();
+                                } elseif ($isWebGuard && $userId) {
+                                    // For officers/admins - get from notifications table
+                                    $notifications = \App\Models\Notification::where('user_id', $userId)
+                                        ->orderBy('created_at', 'desc')
+                                        ->limit(10)
+                                        ->get();
+                                }
                             @endphp
                             @if($notifications->count() > 0)
                                 @foreach($notifications as $notif)
                                     <li>
                                         <a class="dropdown-item dropdown-item-modern {{ !$notif->is_read ? 'bg-light' : '' }}" 
                                            href="{{ $notif->link ? $notif->link : '#' }}"
-                                           data-notif-id="{{ $notif->notification_id }}">
+                                           data-notif-id="{{ $notif->id ?? $notif->notification_id }}"
+                                           data-notif-type="{{ $isVendorGuard ? 'vendor' : 'web' }}"
+                                           style="white-space: normal;">
                                             <div class="d-flex align-items-start">
                                                 <div class="me-2">
                                                     @if($notif->type == 'success')
@@ -429,42 +547,40 @@
                                                     @endif
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <strong>{{ $notif->title }}</strong>
-                                                    <p class="small mb-0 text-muted">{{ Str::limit($notif->message, 80) }}</p>
-                                                    <small class="text-muted">{{ $notif->created_at->diffForHumans() }}</small>
+                                                    <strong style="font-size: 13px;">{{ $notif->title }}</strong>
+                                                    <p class="small mb-0 text-muted" style="font-size: 11px;">{{ Str::limit($notif->message, 80) }}</p>
+                                                    <small class="text-muted" style="font-size: 10px;">
+                                                        {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                                                    </small>
                                                 </div>
                                                 @if(!$notif->is_read)
                                                     <div class="ms-2">
-                                                        <span class="badge bg-primary rounded-pill">New</span>
+                                                        <span class="badge bg-primary rounded-pill" style="font-size: 9px;">New</span>
                                                     </div>
                                                 @endif
                                             </div>
                                         </a>
                                     </li>
                                 @endforeach
-                                @if($notifications->count() >= 10)
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li class="text-center py-2">
-                                        <a href="#" class="small text-primary">View all notifications</a>
-                                    </li>
-                                @endif
                             @else
                                 <li class="text-center py-4">
                                     <i class="fas fa-bell-slash fa-2x text-muted mb-2 d-block"></i>
-                                    <span class="text-muted">No notifications yet</span>
+                                    <span class="text-muted" style="font-size: 12px;">No notifications</span>
                                 </li>
                             @endif
                         </ul>
                     </li>
+                    <!-- END NOTIFICATIONS DROPDOWN -->
                     
-                    <li class="nav-item dropdown">
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown" style="margin-left: 5px;">
                         <a class="dropdown-toggle user-avatar-btn" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-avatar-small">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                {{ strtoupper(substr($userName, 0, 1)) }}
                             </div>
                             <div class="user-info">
-                                <span class="user-name">{{ auth()->user()->name }}</span>
-                                <span class="user-role">{{ auth()->user()->role }}</span>
+                                <span class="user-name">{{ $userName }}</span>
+                                <span class="user-role">{{ $userRole }}</span>
                             </div>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end">
@@ -478,7 +594,7 @@
                             </li>
                         </ul>
                     </li>
-                @endauth
+                @endif
             </ul>
         </div>
     </div>
@@ -496,6 +612,13 @@
         @if(session('error'))
             <div class="alert alert-danger alert-modern alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if(session('info'))
+            <div class="alert alert-info alert-modern alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle me-2"></i> {{ session('info') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
@@ -540,11 +663,16 @@
     document.querySelectorAll('.dropdown-item-modern[data-notif-id]').forEach(item => {
         item.addEventListener('click', function(e) {
             const notifId = this.getAttribute('data-notif-id');
+            const notifType = this.getAttribute('data-notif-type');
             fetch('/notifications/' + notifId + '/read', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
                 }
             }).catch(error => console.error('Error:', error));
         });

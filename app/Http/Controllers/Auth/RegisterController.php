@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Vendor;
+use App\Models\Officer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -25,38 +25,45 @@ class RegisterController extends Controller
 
     protected function validator(array $data)
     {
-        return Validator::make($data, [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'supplierid' => ['required', 'string', 'exists:vendors,supplierid'],
-            'role' => ['required', 'in:vendor,officer'], 
-        ]);
+            'role' => ['required', 'in:review_officer,finance_officer'], // Only officers can register
+        ];
+        
+        return Validator::make($data, $rules);
     }
 
     protected function create(array $data)
     {
-        $vendor = Vendor::where('supplierid', $data['supplierid'])->first();
-
-        if (!$vendor) {
-            throw new \Exception('Vendor ID not found');
-        }
-
-        if ($vendor->supplier_ctc_status !== 'active') {
-            throw new \Exception('Your vendor account is inactive');
-        }
-
-        if ($vendor->supplier_expired_date && $vendor->supplier_expired_date < now()) {
-            throw new \Exception('Your vendor registration has expired');
-        }
-
-        return User::create([
+        // Only allow officer registration
+        // Vendor registration is handled externally in the vendor database
+        
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
-            'vendor_id' => $data['supplierid'],
+            'vendor_id' => null,
         ]);
+
+        if ($data['role'] === 'review_officer') {
+            $department = 'Review Department';
+            $position = 'Review Officer';
+        } else {
+            $department = 'Finance Department';
+            $position = 'Finance Officer';
+        }
+
+        Officer::create([
+            'user_id' => $user->id,
+            'staff_name' => $data['name'],
+            'department' => $department,
+            'position' => $position
+        ]);
+
+        return $user;
     }
 
     public function register(Request $request)
@@ -68,7 +75,7 @@ class RegisterController extends Controller
             Auth::login($user);
             return redirect(route('dashboard'));
         } catch (\Exception $e) {
-            return back()->withErrors(['supplierid' => $e->getMessage()])->withInput();
+            return back()->withErrors(['email' => 'Registration failed: ' . $e->getMessage()])->withInput();
         }
     }
 }

@@ -33,18 +33,62 @@ class User extends Authenticatable
         return $this->role === 'vendor';
     }
 
-    public function isOfficer()
+    public function isReviewOfficer()
     {
-        return $this->role === 'officer';
+        return $this->role === 'review_officer';
     }
 
-    public function isAdmin()
+    public function isFinanceOfficer()
     {
-        return $this->role === 'admin';
+        return $this->role === 'finance_officer';
+    }
+
+    public function isITOfficer()
+    {
+        return $this->role === 'it_officer';
+    }
+
+    public function isOfficer()
+    {
+        return $this->role === 'review_officer' || $this->role === 'finance_officer' || $this->role === 'it_officer';
     }
 
     public function vendor()
     {
         return $this->belongsTo(Vendor::class, 'vendor_id', 'supplierid');
+    }
+
+    public function officer()
+    {
+        return $this->hasOne(Officer::class, 'user_id');
+    }
+
+    // Helper to get vendor ID from either guard
+    public static function getVendorId()
+    {
+        if (auth()->guard('vendor')->check()) {
+            $vendorUser = auth()->guard('vendor')->user();
+            return $vendorUser->vendor->SUPPLIERID ?? null;
+        }
+        
+        if (auth()->check() && auth()->user()->isVendor()) {
+            return auth()->user()->vendor_id;
+        }
+        
+        return null;
+    }
+
+    // Helper to check if current user is vendor (from either guard)
+    public static function isVendorUser()
+    {
+        if (auth()->guard('vendor')->check()) {
+            return true;
+        }
+        
+        if (auth()->check() && auth()->user()->isVendor()) {
+            return true;
+        }
+        
+        return false;
     }
 }

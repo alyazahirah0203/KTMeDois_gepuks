@@ -10,15 +10,14 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Notifications\InvoiceSubmittedNotification;
 use App\Services\NotificationService;
 
 class InvoiceSubmissionService
 {
-    protected $calculationService;
+    public $calculationService;
     protected $notificationService;
 
-    public function __construct(InvoiceCalculationService $calculationService, NotificationService $notificationService) 
+    public function __construct(InvoiceCalculationService $calculationService, NotificationService $notificationService)
     {
         $this->calculationService = $calculationService;
         $this->notificationService = $notificationService;
@@ -81,31 +80,27 @@ class InvoiceSubmissionService
             $invoice->pdf_path = $pdfPath;
             $invoice->save();
 
-            // ==============================================
-            // SEND NOTIFICATIONS - ADD THIS CODE HERE
-            // ==============================================
-            
             // Send notification to vendor
             $vendorUser = User::where('vendor_id', $do->vendor_id)->first();
             if ($vendorUser) {
                 $this->notificationService->send(
                     $vendorUser->id,
-                    'Invoice Submitted Successfully',
-                    'Your invoice ' . $invoiceNo . ' has been submitted and is pending finance review. Total: RM ' . number_format($calculation['total'], 2),
-                    'success',
+                    'Invoice Submitted',
+                    'Your invoice ' . $invoiceNo . ' has been submitted successfully. Please wait for review and approval.',
+                    'info',
                     route('invoices.show', $invoice->invoice_id)
                 );
             }
 
-            // Send notification to finance officers
-            $officers = User::where('role', 'officer')->get();
+            // Send notification to officers
+            $officers = User::where('role', 'review_officer')->get();
             foreach ($officers as $officer) {
                 $this->notificationService->send(
                     $officer->id,
                     'New Invoice Pending Review',
                     'Vendor ' . ($do->vendor->supplier_comp_name ?? 'Unknown') . ' has submitted invoice ' . $invoiceNo . '. Total: RM ' . number_format($calculation['total'], 2),
                     'warning',
-                    route('invoices.show', $invoice->invoice_id)
+                    route('review.invoice.show', $invoice->invoice_id)
                 );
             }
 
@@ -136,14 +131,14 @@ class InvoiceSubmissionService
             $invoice->reason = $reason;
             $invoice->save();
 
-            // Send notification when status changes
+            // Send notification to vendor
             $vendorUser = User::where('vendor_id', $invoice->vendor_id)->first();
             
             if ($vendorUser) {
                 $statusMessages = [
-                    'Finance Review' => 'Your invoice is now under finance review.',
-                    'Payment Processing' => 'Your invoice has been approved! Payment is being processed.',
-                    'Paid' => 'Payment has been completed for your invoice. Total: RM ' . number_format($invoice->total, 2)
+                    'Finance Review' => 'Your invoice ' . $invoice->invoice_no . ' is now under finance review.',
+                    'Payment Processing' => 'Your invoice ' . $invoice->invoice_no . ' has been approved! Payment is being processed.',
+                    'Paid' => 'Payment has been completed for your invoice ' . $invoice->invoice_no . '. Total: RM ' . number_format($invoice->total, 2)
                 ];
                 
                 $statusTitles = [
@@ -152,12 +147,18 @@ class InvoiceSubmissionService
                     'Paid' => 'Payment Completed'
                 ];
                 
+                $statusTypes = [
+                    'Finance Review' => 'info',
+                    'Payment Processing' => 'info',
+                    'Paid' => 'success'
+                ];
+                
                 if (isset($statusMessages[$newStatus])) {
                     $this->notificationService->send(
                         $vendorUser->id,
                         $statusTitles[$newStatus],
                         $statusMessages[$newStatus],
-                        $newStatus == 'Paid' ? 'success' : 'info',
+                        $statusTypes[$newStatus] ?? 'info',
                         route('invoices.show', $invoice->invoice_id)
                     );
                 }
@@ -193,7 +194,7 @@ class InvoiceSubmissionService
         return $prefix . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
     }
 
-    private function generateInvoicePDF($invoice)
+    public function generateInvoicePDF($invoice)
     {
         $data = [
             'invoice' => $invoice,

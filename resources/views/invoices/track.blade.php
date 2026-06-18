@@ -3,6 +3,11 @@
 @section('title', 'Track Claim Status')
 
 @section('content')
+@php
+    $isVendorGuard = auth()->guard('vendor')->check();
+    $dashboardRoute = $isVendorGuard ? route('vendor.dashboard') : route('dashboard');
+@endphp
+
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card-modern bg-white">
@@ -43,7 +48,7 @@
                         </div>
                     </div>
 
-                    <!-- Payment Summary - FOCUS ON MONEY -->
+                    <!-- Payment Summary -->
                     <div class="card bg-primary text-white mb-4">
                         <div class="card-body text-center py-4">
                             <div class="row">
@@ -109,7 +114,7 @@
                                     <p>{{ $invoice->payment_terms }}</p>
                                     
                                     <h6 class="fw-bold mt-3"><i class="fas fa-building me-2"></i>Vendor</h6>
-                                    <p>{{ $invoice->vendor->supplier_comp_name ?? 'N/A' }}</p>
+                                    <p>{{ $invoice->vendor_name }}</p>
                                 </div>
                             </div>
                         </div>
@@ -128,35 +133,39 @@
                             <tr class="text-success">
                                 <th>Discount (Credit Note)</th>
                                 <td class="text-end">- RM {{ number_format($invoice->discount, 2) }}</td>
-                                <td>From supplier credit note</small>
+                                <td><small>From supplier credit note</small></td>
                             </tr>
                             @endif
                             @if($invoice->penalty > 0)
                             <tr class="text-danger">
                                 <th>Penalty (Late 1%)</th>
                                 <td class="text-end">- RM {{ number_format($invoice->penalty, 2) }}</td>
-                                <td>Late delivery penalty</small>
+                                <td><small>Late delivery penalty</small></td>
                             </tr>
                             @endif
                             <tr class="text-warning">
                                 <th>Service Tax (6%)</th>
-                                <td class="text-end">+ RM {{ number_format($invoice->service_tax, 2) }}</small>
-                                <td>Based on after discount amount</small>
+                                <td class="text-end">+ RM {{ number_format($invoice->service_tax, 2) }}</td>
+                                <td><small>Based on after discount amount</small></td>
                             </tr>
                             <tr class="table-primary">
                                 <th><strong>Total Claim Amount</strong></th>
-                                <td class="text-end"><strong>RM {{ number_format($invoice->total, 2) }}</strong></small>
-                                <td></small>
+                                <td class="text-end"><strong>RM {{ number_format($invoice->total, 2) }}</strong></td>
+                                <td></td>
                             </tr>
                         </table>
                     </div>
 
+                    <!-- Back to Dashboard button - ADDED -->
                     <div class="text-center mt-4">
                         <a href="{{ route('invoices.download', $invoice->invoice_id) }}" class="btn-gradient success">
                             <i class="fas fa-download me-2"></i> Download Invoice PDF
                         </a>
                         <a href="{{ route('invoices.show', $invoice->invoice_id) }}" class="btn-gradient ms-2">
                             <i class="fas fa-eye me-2"></i> View Full Details
+                        </a>
+                        <a href="{{ $dashboardRoute }}" class="btn btn-primary ms-2">
+                            <i class="fas fa-home me-2"></i> Back to Dashboard
                         </a>
                     </div>
                 @elseif(request('invoice_no'))

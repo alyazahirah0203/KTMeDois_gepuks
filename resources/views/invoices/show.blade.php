@@ -3,6 +3,25 @@
 @section('title', 'Invoice Details')
 
 @section('content')
+@php
+    // Check which guard is authenticated
+    $isVendorGuard = auth()->guard('vendor')->check();
+    $isWebGuard = auth()->check();
+    $isVendor = false;
+    $isOfficer = false;
+    
+    if ($isVendorGuard) {
+        $isVendor = true;
+    } elseif ($isWebGuard) {
+        $user = auth()->user();
+        $isVendor = $user->isVendor();
+        $isOfficer = $user->isOfficer();
+    }
+    
+    // Determine dashboard route based on guard
+    $dashboardRoute = $isVendorGuard ? route('vendor.dashboard') : route('dashboard');
+@endphp
+
 <div class="card">
     <div class="card-header bg-primary text-white">
         <h4 class="mb-0">Invoice Details: {{ $invoice->invoice_no }}</h4>
@@ -17,7 +36,7 @@
             </div>
             <div class="col-md-6">
                 <p><strong>DO Number:</strong> {{ $invoice->deliveryOrder->do_number ?? 'N/A' }}</p>
-                <p><strong>Vendor:</strong> {{ $invoice->vendor->supplier_comp_name ?? 'N/A' }}</p>
+                <p><strong>Vendor:</strong> {{ $invoice->vendor_name }}</p>
                 <p><strong>Status:</strong> 
                     <span class="badge bg-{{ $invoice->status == 'Submitted' ? 'warning' : ($invoice->status == 'Finance Review' ? 'info' : ($invoice->status == 'Payment Processing' ? 'primary' : 'success')) }}">
                         {{ $invoice->status }}
@@ -221,7 +240,6 @@
             border: 3px solid #dee2e6;
         }
 
-        /* Completed stage */
         .step-item.completed .icon-circle {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
@@ -229,7 +247,6 @@
             transform: scale(1.05);
         }
 
-        /* Active stage - BIG and BOLD */
         .step-item.active .icon-circle {
             background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
             color: white;
@@ -238,7 +255,6 @@
             box-shadow: 0 0 0 8px rgba(0,123,255,0.2), 0 10px 20px rgba(0,0,0,0.1);
         }
 
-        /* Payment Processing special animation */
         .step-item.active .icon-circle i {
             animation: spin 2s linear infinite;
         }
@@ -248,7 +264,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Paid stage special */
         .step-item.completed:last-child .icon-circle {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             box-shadow: 0 0 0 8px rgba(40,167,69,0.2);
@@ -272,7 +287,6 @@
             border: 2px solid #fff;
         }
 
-        /* THICK CONNECTOR LINE */
         .step-connector {
             position: absolute;
             top: 55px;
@@ -284,14 +298,12 @@
             border-radius: 3px;
         }
 
-        /* Completed connector - THICK GREEN */
         .step-connector.connector-completed {
             background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
             height: 8px;
             box-shadow: 0 2px 4px rgba(40,167,69,0.3);
         }
 
-        /* Active connector - THICK BLUE with glow */
         .step-connector.connector-active {
             background: linear-gradient(90deg, #007bff 0%, #6610f2 100%);
             height: 8px;
@@ -349,7 +361,6 @@
             margin: 0 auto;
         }
 
-        /* Badges */
         .processing-badge {
             background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
             color: white;
@@ -391,7 +402,6 @@
             display: inline-block;
         }
 
-        /* Loading bar */
         .step-loading {
             margin-top: 12px;
             padding: 0 20px;
@@ -436,7 +446,6 @@
             font-weight: 600;
         }
 
-        /* Summary Card */
         .summary-card {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 16px;
@@ -476,7 +485,6 @@
             color: #6c757d;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .steps-container {
                 flex-direction: column;
@@ -568,11 +576,93 @@
             </tfoot>
         </table>
 
+        <!-- Payment Information Section -->
+        @if($invoice->payment)
+        <hr>
+        <h5><i class="fas fa-credit-card me-2"></i>Payment Information</h5>
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Payment Date:</strong> {{ \Carbon\Carbon::parse($invoice->payment->payment_date)->format('d-m-Y') }}</p>
+                        <p><strong>Payment Amount:</strong> RM {{ number_format($invoice->payment->payment_amount, 2) }}</p>
+                        <p><strong>Payment Method:</strong> {{ $invoice->payment->payment_method }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        @if($invoice->payment->transaction_ref)
+                            <p><strong>Transaction Ref:</strong> {{ $invoice->payment->transaction_ref }}</p>
+                        @endif
+                        @if($invoice->payment->remarks)
+                            <p><strong>Remarks:</strong> {{ $invoice->payment->remarks }}</p>
+                        @endif
+                        @if($invoice->payment->proof_of_payment)
+                            <p><strong>Proof of Payment:</strong> 
+                                <a href="{{ asset('storage/' . $invoice->payment->proof_of_payment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-file me-1"></i> View Document
+                                </a>
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Vendor Actions - Edit & Delete -->
+        @if($isVendor && in_array($invoice->status, ['Submitted', 'Rejected']))
+        <div class="mt-4">
+            <div class="btn-group">
+                <a href="{{ route('invoices.edit', $invoice->invoice_id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit me-1"></i> Edit Invoice
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash me-1"></i> Delete Invoice
+                </button>
+            </div>
+        </div>
+
+        <!-- Delete Form -->
+        <form id="delete-form-{{ $invoice->invoice_id }}" method="POST" action="{{ route('invoices.destroy', $invoice->invoice_id) }}" style="display: none;">
+            @csrf
+            @method('DELETE')
+        </form>
+        @endif
+
+        <!-- Back to Dashboard button - FIXED -->
         <div class="text-center mt-4">
             <a href="{{ route('invoices.download', $invoice->invoice_id) }}" class="btn btn-success">Download Invoice PDF</a>
             <a href="{{ route('invoices.track') }}" class="btn btn-secondary">Track Another Invoice</a>
-            <a href="{{ route('dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+            <a href="{{ $dashboardRoute }}" class="btn btn-primary">Back to Dashboard</a>
         </div>
     </div>
 </div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this invoice?</p>
+                <p><strong>Invoice Number:</strong> {{ $invoice->invoice_no }}</p>
+                <p><strong>Total Amount:</strong> RM {{ number_format($invoice->total, 2) }}</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Invoice</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
+        document.getElementById('delete-form-{{ $invoice->invoice_id }}').submit();
+    });
+</script>
+
 @endsection
